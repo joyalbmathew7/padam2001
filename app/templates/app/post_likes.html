@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Likes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        a.back {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .like-card {
+            background-color: #fff;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .like-card a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: 500;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #777;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'post_detail' post.slug %}" class="back">⬅ Back to Post</a>
+
+        <h2>Liked by</h2>
+
+        {% for l in likes %}
+            <div class="like-card">
+                <a href="{% url 'user_profile' l.user.username %}">
+                    {{ l.user.username }}
+                </a>
+            </div>
+        {% empty %}
+            <p class="empty-msg">No likes yet</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

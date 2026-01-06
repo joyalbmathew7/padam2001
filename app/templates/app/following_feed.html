@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following Feed</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- ICONS -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding-top: 70px;
+        }
+
+        /* ===== NAV BAR ===== */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #007BFF;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #f1f1f1;
+        }
+
+        .nav i {
+            font-size: 18px;
+        }
+
+        .nav-text {
+            font-weight: 500;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .post {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 15px;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
+
+        .post p {
+            margin: 5px 0;
+        }
+
+        .post img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #777;
+            margin-top: 40px;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 600px) {
+            .nav-text {
+                display: none;
+            }
+
+            .nav a {
+                background: none;
+                padding: 10px;
+            }
+
+            .nav i {
+                font-size: 22px;
+            }
+
+            .container {
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .post {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== NAV BAR ===== -->
+<div class="nav">
+    <a href="{% url 'post_list' %}">
+        <i class="fa-solid fa-house"></i>
+        <span class="nav-text">Home</span>
+    </a>
+
+    <a href="{% url 'my_profile' %}">
+        <i class="fa-solid fa-user"></i>
+        <span class="nav-text">Profile</span>
+    </a>
+
+    <a href="{% url 'logout' %}">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="nav-text">Logout</span>
+    </a>
+</div>
+
+<!-- ===== FEED ===== -->
+<div class="container">
+    <h1>Posts from People You Follow</h1>
+
+    {% for post in posts %}
+        <div class="post">
+            <p><strong>{{ post.user.username }}</strong> — {{ post.title }}</p>
+            <p>{{ post.content }}</p>
+
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="Post Image">
+            {% endif %}
+        </div>
+    {% empty %}
+        <p class="empty-msg">You are not following anyone yet.</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>

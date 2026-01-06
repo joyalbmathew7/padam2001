@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Followers | {{ profile_user.username }}</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- ICONS -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding-top: 70px;
+        }
+
+        /* ===== NAV BAR ===== */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #007BFF;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #f1f1f1;
+        }
+
+        .nav i {
+            font-size: 18px;
+        }
+
+        .nav-text {
+            font-weight: 500;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .follower {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.2s;
+        }
+
+        .follower a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .follower:hover {
+            background-color: #e6f7e6;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 600px) {
+            .nav-text {
+                display: none;
+            }
+
+            .nav a {
+                background: none;
+                padding: 10px;
+            }
+
+            .nav i {
+                font-size: 22px;
+            }
+
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== NAV BAR ===== -->
+<div class="nav">
+    <a href="{% url 'home' %}">
+        <i class="fa-solid fa-house"></i>
+        <span class="nav-text">Home</span>
+    </a>
+
+    <a href="{% url 'my_profile' %}">
+        <i class="fa-solid fa-user"></i>
+        <span class="nav-text">Profile</span>
+    </a>
+
+    <a href="{% url 'logout' %}">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="nav-text">Logout</span>
+    </a>
+</div>
+
+<!-- ===== FOLLOWERS LIST ===== -->
+<div class="container">
+    <h2>Followers of {{ profile_user.username }}</h2>
+
+    {% for f in followers %}
+        <div class="follower">
+            <a href="{% url 'user_profile' f.follower.username %}">
+                {{ f.follower.username }}
+            </a>
+        </div>
+    {% empty %}
+        <p style="text-align:center; color:#777;">No followers yet</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>

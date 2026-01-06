@@ -1,0 +1,7 @@
+.comment-box{
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1000;
+    border: 1px solid black;
+}

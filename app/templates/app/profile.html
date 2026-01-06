@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ profile_user.username }} | Profile</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+    a { text-decoration: none; color: #007BFF; }
+
+    .container { max-width: 700px; margin: 20px auto; padding: 0 10px; }
+
+    .profile-header {
+        background: #fff; padding: 20px; border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;
+    }
+    .profile-avatar {
+        width: 80px; height: 80px; border-radius: 50%; background: #ccc;
+        display: inline-block; margin-bottom: 10px; font-size: 36px; color: white;
+        line-height: 80px;
+    }
+    .profile-header h1 { margin: 5px 0; font-size: 28px; }
+
+    .profile-stats { margin-top: 10px; font-weight: 500; }
+    .profile-stats span { margin: 0 10px; }
+    .profile-stats span a { text-decoration: none; color: #007BFF; font-weight: bold; }
+
+    .follow-btn { margin-top: 10px; padding: 8px 20px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    .follow { background-color: #28a745; color: white; }
+    .unfollow { background-color: #dc3545; color: white; }
+
+    .posts-section { margin-top: 20px; }
+    .post-card {
+        background: #fff; padding: 15px; margin-bottom: 15px;
+        border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .post-card img { max-width: 100%; border-radius: 5px; margin-top: 10px; }
+    .post-card h3 { margin-top: 0; }
+    .post-card small { color: #555; }
+
+    @media (max-width: 600px) {
+        .profile-header h1 { font-size: 22px; }
+        .follow-btn { width: 100%; }
+        .profile-avatar { width: 60px; height: 60px; line-height: 60px; font-size: 24px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <a href="{% url 'post_list' %}">⬅ Back to Feed</a>
+
+    <div class="profile-header">
+        <div class="profile-avatar">{{ profile_user.username|slice:":1"|upper }}</div>
+        <h1>{{ profile_user.username }}</h1>
+
+        <div class="profile-stats">
+            <span><a href="{% url 'followers_list' profile_user.username %}">{{ followers_count }}</a> Followers</span> |
+            <span><a href="{% url 'following_list' profile_user.username %}">{{ following_count }}</a> Following</span>
+        </div>
+
+        {% if request.user.is_authenticated and request.user != profile_user %}
+        <form method="POST" action="{% url 'follow_user' profile_user.username %}">
+            {% csrf_token %}
+            {% if is_following %}
+                <button class="follow-btn unfollow" type="submit">Unfollow</button>
+            {% else %}
+                <button class="follow-btn follow" type="submit">Follow</button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="posts-section">
+        <h2>Posts</h2>
+        {% for post in posts %}
+            <div class="post-card">
+                <h3>{{ post.title }}</h3>
+                {% if post.image %}<img src="{{ post.image.url }}" alt="Post Image">{% endif %}
+                <p>{{ post.content }}</p>
+                <small>Posted on {{ post.created_at }}</small>
+                <br>
+                <a href="{% url 'post_detail' post_slug=post.slug %}">View Details</a>
+            </div>
+        {% empty %}
+            <p>No posts yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

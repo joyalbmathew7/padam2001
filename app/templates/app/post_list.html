@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padam | Feed</title>
+
+    <link rel="icon" type="image/png" href="{% static 'icon/icons.png' %}">
+
+    <!-- FONT AWESOME ICONS -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f7f7f7;
+        }
+
+        /* ===== NAV BAR ===== */
+        .nav {
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-left,
+        .nav-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #007BFF;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #f1f1f1;
+        }
+
+        .nav i {
+            font-size: 18px;
+        }
+
+        .nav-text {
+            font-weight: 500;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .post-card {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .post-card img {
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+
+.buttons button {
+    cursor: pointer;
+    margin-right: 10px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    background: #f1f1f1;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.buttons button:hover {
+    background: #e0e0e0;
+}
+
+.buttons i {
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+.buttons .like-count, .buttons .dislike-count {
+    font-weight: bold;
+}
+
+
+        .like-btn { background: #e0ffe0; }
+        .dislike-btn { background: #ffe0e0; }
+
+        /* ===== MOBILE ICON ONLY ===== */
+        @media (max-width: 600px) {
+
+            .nav {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+
+            .nav-text {
+                display: none; /* hide text */
+            }
+
+            .nav a {
+                background: none;
+                padding: 10px;
+            }
+
+            .nav i {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== NAV BAR ===== -->
+<div class="nav">
+
+    <div class="nav-left">
+        {% if request.user.is_authenticated %}
+            <span class="nav-text">Hi, {{ request.user.username }}</span>
+
+            <a href="{% url 'create_post' %}">
+                <i class="fa-solid fa-plus"></i>
+                <span class="nav-text">Upload</span>
+            </a>
+
+            <a href="{% url 'following_feed' %}">
+                <i class="fa-solid fa-user-group"></i>
+                <span class="nav-text">Following</span>
+            </a>
+
+            <a href="{% url 'my_profile' %}">
+                <i class="fa-solid fa-user"></i>
+                <span class="nav-text">Profile</span>
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="nav-right">
+        <a href="{% url 'home' %}">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span class="nav-text">Search</span>
+        </a>
+
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'delete_account' %}">
+                <i class="fa-solid fa-trash"></i>
+                <span class="nav-text">Delete</span>
+            </a>
+
+            <a href="{% url 'logout' %}">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        {% else %}
+            <a href="{% url 'sign_in' %}">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span class="nav-text">Login</span>
+            </a>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+
+    <h2>Post Feed</h2>
+
+    {% for post in posts %}
+        <div class="post-card">
+            <strong>{{ post.title }}</strong><br>
+            By {{ post.user.username }} | {{ post.created_at }}
+
+            <p>{{ post.content }}</p>
+
+            {% if post.image %}
+                <img src="{{ post.image.url }}">
+            {% endif %}
+
+<div class="buttons">
+    {% if request.user.is_authenticated %}
+        <button class="like-btn" id="like-{{ post.slug }}" onclick="sendLike('{{ post.slug }}','like')">
+            <i class="fa-solid fa-thumbs-up" style="color: {% if post.user_reaction == True %}#007BFF{% else %}#555{% endif %};"></i>
+            <span class="like-count">{{ post.like_count }}</span>
+        </button>
+
+        <button class="dislike-btn" id="dislike-{{ post.slug }}" onclick="sendLike('{{ post.slug }}','dislike')">
+            <i class="fa-solid fa-thumbs-down" style="color: {% if post.user_reaction == False %}#dc3545{% else %}#555{% endif %};"></i>
+            <span class="dislike-count">{{ post.dislike_count }}</span>
+        </button>
+    {% else %}
+        <a href="{% url 'sign_in' %}">Login to like/dislike</a>
+    {% endif %}
+
+    <a href="{% url 'post_detail' post_slug=post.slug %}">
+        <i class="fa-solid fa-eye"></i> View Details
+    </a>
+</div>
+
+        </div>
+    {% empty %}
+        <p>No posts available.</p>
+    {% endfor %}
+</div>
+
+<script>
+function sendLike(slug, action) {
+    fetch(`/post/${slug}/${action}/`)
+        .then(res => res.json())
+        .then(data => {
+            // Update counts
+            document.querySelector(`#like-${slug} .like-count`).textContent = data.likes;
+            document.querySelector(`#dislike-${slug} .dislike-count`).textContent = data.dislikes;
+
+            // Change icon colors
+            const likeIcon = document.querySelector(`#like-${slug} i`);
+            const dislikeIcon = document.querySelector(`#dislike-${slug} i`);
+
+            if(action === 'like') {
+                likeIcon.style.color = "#007BFF";
+                dislikeIcon.style.color = "#555";
+            } else {
+                dislikeIcon.style.color = "#dc3545";
+                likeIcon.style.color = "#555";
+            }
+        })
+        .catch(err => console.error(err));
+}
+
+</script>
+
+</body>
+</html>

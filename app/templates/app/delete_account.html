@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account | Padam</title>
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding-top: 70px; /* space for navbar */
+        }
+
+        /* ===== NAV BAR ===== */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #007BFF;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #f1f1f1;
+        }
+
+        .nav i {
+            font-size: 18px;
+        }
+
+        .nav-text {
+            font-weight: 500;
+        }
+
+        /* ===== CARD ===== */
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 25px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #dc3545;
+        }
+
+        p {
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        form button,
+        .cancel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .cancel-btn {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #a71d2a;
+        }
+
+        .cancel-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* ===== MOBILE ICON ONLY ===== */
+        @media (max-width: 600px) {
+            .nav-text {
+                display: none;
+            }
+
+            .nav a {
+                background: none;
+                padding: 10px;
+            }
+
+            .nav i {
+                font-size: 22px;
+            }
+
+            body {
+                padding-top: 65px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== NAV BAR ===== -->
+<div class="nav">
+    <a href="{% url 'post_list' %}">
+        <i class="fa-solid fa-house"></i>
+        <span class="nav-text">Home</span>
+    </a>
+
+    <a href="{% url 'my_profile' %}">
+        <i class="fa-solid fa-user"></i>
+        <span class="nav-text">Profile</span>
+    </a>
+
+    <a href="{% url 'logout' %}">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="nav-text">Logout</span>
+    </a>
+</div>
+
+<!-- ===== DELETE ACCOUNT CARD ===== -->
+<div class="container">
+    <h1>Delete Account</h1>
+
+    <p>
+        Are you sure you want to delete your account,
+        <strong>{{ request.user.username }}</strong>? <br>
+        This action cannot be undone!
+    </p>
+
+    <form method="POST" action="{% url 'delete_account' %}">
+        {% csrf_token %}
+        <button type="submit" class="delete-btn">
+            Yes, Delete My Account
+        </button>
+
+        <a href="{% url 'my_profile' %}" class="cancel-btn">
+            Cancel
+        </a>
+    </form>
+</div>
+
+</body>
+</html>

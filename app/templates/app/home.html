@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Users | Padam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        a.home-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: 500;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            position: relative; /* for suggestions dropdown */
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 50px 0 0 50px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007BFF;
+        }
+
+        button {
+            padding: 10px 16px;
+            font-size: 16px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 50px 50px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Suggestions dropdown */
+        #suggestions {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-top: none;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+
+        #suggestions div {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #suggestions div:hover {
+            background-color: #f0f0f0;
+        }
+
+        #suggestions i {
+            color: #007BFF;
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 500px) {
+            input[type="text"], button {
+                width: 100%;
+                border-radius: 50px;
+                margin: 2px 0;
+            }
+            form {
+                flex-direction: column;
+            }
+            #suggestions {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Search Users</h1>
+<a href="{% url 'post_list' %}" class="home-link"><i class="fa-solid fa-house"></i> Home</a>
+
+<form method="GET" autocomplete="off">
+    <input type="text" id="search-box" name="q" placeholder="Search users...">
+    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    <div id="suggestions"></div>
+</form>
+
+<script>
+const searchBox = document.getElementById('search-box');
+const suggestionsDiv = document.getElementById('suggestions');
+
+searchBox.addEventListener('keyup', function() {
+    const query = searchBox.value.trim();
+
+    if (query.length === 0) {
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+        return;
+    }
+
+    fetch(`/ajax/search_users/?q=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            suggestionsDiv.innerHTML = '';
+            if (data.users.length > 0) {
+                data.users.forEach(user => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<i class="fa-solid fa-user"></i> ${user}`;
+                    div.addEventListener('click', () => {
+                        window.location.href = `/profile/${user}/`;
+                    });
+                    suggestionsDiv.appendChild(div);
+                });
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+});
+</script>
+
+</body>
+</html>
