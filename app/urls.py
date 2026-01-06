@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
+
 
 urlpatterns = [
     path('', views.post_list, name='post_list'),
@@ -35,4 +37,15 @@ urlpatterns = [
     path('ajax/search_users/', views.ajax_search_users, name='ajax_search_users'),
 
     path('delete_account/', views.delete_account, name='delete_account'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+
+    path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('verify-otp1/', views.verify_otp1, name='verify_otp1'),
+    path('reset-password/', views.reset_password, name='reset_password'),
+
+
 ]

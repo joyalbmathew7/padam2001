@@ -1,10 +1,17 @@
 from django.shortcuts import render,redirect,get_object_or_404
+
+# from project.project.settings import EMAIL_HOST_USER
 from .models import Post, Like, Comment
 from .models import *
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
+import random
+from django.core.mail import send_mail
+from .models import EmailOTP
+from django.conf import settings
+from django.core.mail import send_mail
 
 
 
@@ -38,24 +45,51 @@ def sign_in(request):
 
     
 def sign_up(request):
-    if request.method=='POST':
+    if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
-        if password == confirm_password:
-            from django.contrib.auth.models import User
-            if User.objects.filter(username=username).exists():
-                messages.error(request, 'Username already exists. Please choose a different one.')
-            elif User.objects.filter(email = email).exists():
-                messages.error(request, 'Email already registered. Please use a different email.')
-            else:
-                user = User.objects.create_user(username=username, email=email, password=password)
-                user.save()
-                return redirect('sign_in')
-        else:
-            messages.error(request, 'Passwords do not match. Please try again.')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'app/sign_up.html')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return redirect('sign_up')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists")
+            return redirect('sign_up')
+
+        # CREATE USER AS INACTIVE
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+        user.is_active = False
+        user.save()
+
+        # CREATE OTP
+        otp = str(random.randint(100000, 999999))
+        EmailOTP.objects.create(user=user, otp=otp)
+
+        send_mail(
+            'Email Verification OTP',
+            f'Your OTP is {otp}',
+            settings.EMAIL_HOST_USER,
+            [email],
+        )
+
+        request.session['otp_user_id'] = user.id
+
+        messages.success(request, 'Check your email for OTP.')
+        return redirect('verify_otp')
+
     return render(request, 'app/sign_up.html')
+
 
 
 def create_post(request):
@@ -323,15 +357,17 @@ def ajax_search_users(request):
 
     return JsonResponse({'users': users})
 
+
 @login_required
 def delete_account(request):
     if request.method == "POST":
         user = request.user
-        user.delete()
-        logout(request)
-        return redirect('post_list')  # redirect to home or signup page
+        logout(request)      # logout first
+        user.delete()        # then delete
+        return redirect('post_list')
 
     return render(request, 'app/delete_account.html')
+
 
 @login_required
 def delete_post(request, slug):
@@ -379,3 +415,101 @@ def delete_post1(request, slug):
     if request.method == "POST":
         post.delete()
         return redirect('user_profile', request.user.username)
+
+
+
+
+def verify_otp(request):
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+        email_otp = EmailOTP.objects.filter(otp=otp).last()
+
+        if email_otp:
+            user = email_otp.user
+            user.is_active = True
+            user.save()
+            email_otp.delete()
+            messages.success(request, 'Email verified successfully')
+            return redirect('sign_in')
+        else:
+            messages.error(request, 'Invalid OTP')
+
+    return render(request, 'app/verify_otp.html')
+
+# app/views.py
+import random
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from .models import PasswordResetOTP
+from django.contrib import messages
+from project.settings import EMAIL_HOST_USER
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "Email not found")
+            return redirect('forgot_password')
+
+        otp = str(random.randint(100000, 999999))
+        PasswordResetOTP.objects.create(user=user, otp=otp)
+
+        send_mail(
+            'Password Reset OTP',
+            f'Your OTP is {otp}. It will expire in 5 minutes.',
+            EMAIL_HOST_USER,
+            [email],
+        )
+
+        request.session['reset_user'] = user.id  # store user in session for verification
+        # changed by Copilot: previously redirected to 'verify_otp' (email OTP); now using 'verify_otp1' for password reset OTP flow
+        return redirect('verify_otp1')
+
+    return render(request, 'app/forgot_password.html')
+
+
+def verify_otp1(request):
+    user_id = request.session.get('reset_user')
+    if not user_id:
+        return redirect('forgot_password')
+
+    if request.method == "POST":
+        otp_input = request.POST.get('otp')
+        user = User.objects.get(id=user_id)
+        otp_obj = PasswordResetOTP.objects.filter(user=user).last()
+
+        if otp_obj and otp_obj.otp == otp_input and not otp_obj.is_expired():
+            return redirect('reset_password')
+        else:
+            messages.error(request, "Invalid or expired OTP")
+            # changed by Copilot: keep user on 'verify_otp1' so PasswordResetOTP is checked (was 'verify_otp' before)
+            return redirect('verify_otp1')
+
+    return render(request, 'app/verify_otp1.html')
+
+
+from django.contrib.auth.hashers import make_password
+
+def reset_password(request):
+    user_id = request.session.get('reset_user')
+    if not user_id:
+        return redirect('forgot_password')
+
+    user = User.objects.get(id=user_id)
+
+    if request.method == "POST":
+        password = request.POST.get('password')
+        confirm = request.POST.get('confirm_password')
+        if password == confirm:
+            user.password = make_password(password)
+            user.save()
+            messages.success(request, "Password reset successful")
+            return redirect('sign_in')
+        else:
+            messages.error(request, "Passwords do not match")
+    
+    return render(request, 'app/reset_password.html')
+

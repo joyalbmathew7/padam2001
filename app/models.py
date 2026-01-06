@@ -116,6 +116,20 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+
+
+
+class EmailOTP(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE   # 🔥 IMPORTANT
+    )
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username
 
 
     
@@ -126,5 +140,16 @@ class Profile(models.Model):
 
 #     def __str__(self):
 #         return self.user.username
+
+# app/models.py
+
+import datetime
+class PasswordResetOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return (datetime.datetime.now(datetime.timezone.utc) - self.created_at).seconds > 300  # 5 mins
 
 

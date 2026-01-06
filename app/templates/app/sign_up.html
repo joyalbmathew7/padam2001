@@ -102,9 +102,22 @@
         <input type="password" name="password" id="password" required>
         <label for="confirm_password">Confirm Password</label>
         <input type="password" name="confirm_password" id="confirm_password" required>
+        <div style="margin-bottom:10px;">
+            <input type="checkbox" id="show_passwords" onclick="togglePasswords('password','confirm_password')">
+            <label for="show_passwords">Show passwords</label>
+        </div>
             <button type="submit">Sign Up</button>
         </form>
         <div class="signin-link">
             Already have an account? <a href="{% url 'sign_in' %}">Sign In</a>
         </div>
     </div>
+
+<script>
+function togglePasswords(id1,id2){
+    var a = document.getElementById(id1);
+    var b = document.getElementById(id2);
+    var type = a.type === 'password' ? 'text' : 'password';
+    a.type = type; b.type = type;
+}
+</script>
